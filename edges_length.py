@@ -44,10 +44,12 @@ class EdgesLength:
         loops = []
         selected_vertices = [vertex for vertex in bm.verts if vertex.select and 0 < len(vertex.link_edges) <= 2]
         err_point = len(selected_vertices)
+        # non-closed loops
         non_start_end_vertices = [vert for vert in selected_vertices if
                                   len(vert.link_edges) == 2
-                                  and (vert.link_edges[0].other_vert(vert).select and vert.link_edges[1].other_vert(vert).select)
-        ]
+                                  and (vert.link_edges[0].other_vert(vert).select
+                                       and vert.link_edges[1].other_vert(vert).select)
+                                  ]
         start_end_vertices = set(selected_vertices).difference(set(non_start_end_vertices))
         # try to start from each start/end vertex to get vertices loop
         for vertex in start_end_vertices:
@@ -59,18 +61,42 @@ class EdgesLength:
                     loop.append(next_vertex)
                     next_vertex = cls._next_vert(next_vertex, loop)
                     if len(loop) > err_point:
-                        print('ERR counting vertices loops')
+                        print('ERR counting vertices loop started from ', vertex)
                         break
                 loops.append(loop)
+        # try to process with closed loops
+        processed_vertices = sum(loops, [])     # get vertices from already created loops
+        # get not processed, but still selected loops
+        possible_closed_loops = list(set(selected_vertices) - set(processed_vertices))
+        while possible_closed_loops:
+            loop = [possible_closed_loops[0], ]
+            next_vertex = cls._next_vert(possible_closed_loops[0], loop)
+            while next_vertex:
+                loop.append(next_vertex)
+                next_vertex = cls._next_vert(next_vertex, loop)
+                if len(loop) > len(possible_closed_loops):
+                    print('ERR counting vertices loop started from ', possible_closed_loops[0])
+                    break
+            loops.append(loop)
+            possible_closed_loops = list(set(possible_closed_loops) - set(loop))
+        # show loops
+        # for loop in loops:
+        #     print('loop')
+        #     print(loop)
         # deselect all
         cls._deselect_all(bm=bm)
         # for each loop - control summary edge length
         for loop in loops:
-            pass
-
-
-
-        # save changed data to mesh
+            control_length = 0.0
+            prev_vertex = loop[0]
+            for vertex in loop[1:]:
+                control_length += (vertex.co - prev_vertex.co).length
+                if control_length < edge_length:
+                    vertex.select = True
+                else:
+                    control_length = 0.0
+                prev_vertex = vertex
+        # save changed selection to the source mesh
         bm.to_mesh(context.object.data)
         # return to Edit mode
         bpy.ops.object.mode_set(mode='EDIT')

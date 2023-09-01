@@ -2,7 +2,7 @@
 # interplanety@interplanety.org
 #
 # GitHub
-#    https://github.com/Korchy/1d_we_crease_from_seam
+#    https://github.com/Korchy/1d_edges_length
 
 import bmesh
 import bpy

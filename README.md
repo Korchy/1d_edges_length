@@ -12,5 +12,8 @@ Blender version
 
 Version history
 -
+1.0.1
+- Reverse start-end loops to process from left to right by X axis
+
 1.0.0
 - Release

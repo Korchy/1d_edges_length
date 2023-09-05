@@ -14,7 +14,7 @@ bl_info = {
     "name": "Edges Length",
     "description": "Selects all vertices on the edge loop which do not fit into the given edge length",
     "author": "Nikita Akimov, Paul Kotelevets",
-    "version": (1, 0, 0),
+    "version": (1, 0, 1),
     "blender": (2, 79, 0),
     "location": "View3D > Tool panel > 1D > Edges Length",
     "doc_url": "https://github.com/Korchy/1d_edges_length",
@@ -64,6 +64,10 @@ class EdgesLength:
                         print('ERR counting vertices loop started from ', vertex)
                         break
                 loops.append(loop)
+        # optimize start-end loops for more convenient processing: all from left to right by X axis
+        for loop in loops:
+            if loop[0].co.x > loop[-1].co.x:
+                loop.reverse()
         # try to process with closed loops
         processed_vertices = sum(loops, [])     # get vertices from already created loops
         # get not processed, but still selected loops

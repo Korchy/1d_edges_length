@@ -15,7 +15,7 @@ bl_info = {
     "name": "Edges Length",
     "description": "Selects all vertices on the edge loop which do not fit into the given edge length",
     "author": "Nikita Akimov, Paul Kotelevets",
-    "version": (1, 1, 0),
+    "version": (1, 1, 1),
     "blender": (2, 79, 0),
     "location": "View3D > Tool panel > 1D > Edges Length",
     "doc_url": "https://github.com/Korchy/1d_edges_length",
@@ -154,7 +154,7 @@ class EdgesLength:
         vec1 = vert0.co - vert2.co
         # return angle in radians
         angle = vec0.angle(vec1)
-        angle = angle if angle < radians(180) else (angle - radians(180))
+        angle = angle if angle < radians(180) else (radians(360) - angle)
         return angle
 
 

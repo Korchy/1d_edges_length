@@ -12,6 +12,9 @@ Blender version
 
 Version history
 -
+1.1.1
+- Fixing error
+
 1.1.0
 - Deselect first and last vertices of each loop
 - Deselect vertices with edge angle less than X degrees

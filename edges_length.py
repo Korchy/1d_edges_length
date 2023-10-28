@@ -15,7 +15,7 @@ bl_info = {
     "name": "Edges Length",
     "description": "Selects all vertices on the edge loop which do not fit into the given edge length",
     "author": "Nikita Akimov, Paul Kotelevets",
-    "version": (1, 1, 1),
+    "version": (1, 1, 2),
     "blender": (2, 79, 0),
     "location": "View3D > Tool panel > 1D > Edges Length",
     "doc_url": "https://github.com/Korchy/1d_edges_length",
@@ -108,9 +108,7 @@ class EdgesLength:
         # deselect vertices with angle less than deselect_angle
         for vertex in (_vertex for _vertex in bm.verts
                        if _vertex.select
-                           and len(_vertex.link_edges) == 2
-                           and _vertex.link_edges[0].other_vert(_vertex).select
-                           and _vertex.link_edges[1].other_vert(_vertex).select):
+                           and len(_vertex.link_edges) == 2):
             edge0 = vertex.link_edges[0]
             edge1 = vertex.link_edges[1]
             if cls._edges_angle(edge0=edge0, edge1=edge1) < radians(deselect_angle):

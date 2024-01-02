@@ -12,6 +12,9 @@ Blender version
 
 Version history
 -
+1.1.3
+- Integrated to the NA 1D Tools
+
 1.1.2
 - Deselect vertices on sharp angles even if nearest vertices are not selected
 

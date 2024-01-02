@@ -15,7 +15,7 @@ bl_info = {
     "name": "Edges Length",
     "description": "Selects all vertices on the edge loop which do not fit into the given edge length",
     "author": "Nikita Akimov, Paul Kotelevets",
-    "version": (1, 1, 2),
+    "version": (1, 1, 3),
     "blender": (2, 79, 0),
     "location": "View3D > Tool panel > 1D > Edges Length",
     "doc_url": "https://github.com/Korchy/1d_edges_length",
@@ -155,6 +155,24 @@ class EdgesLength:
         angle = angle if angle < radians(180) else (radians(360) - angle)
         return angle
 
+    @staticmethod
+    def ui(layout, context):
+        # ui panel
+        layout.prop(
+            data=context.scene,
+            property='edges_length_length'
+        )
+        layout.prop(
+            data=context.scene,
+            property='edges_length_deselect_angle'
+        )
+        op = layout.operator(
+            operator='edgeslength.unsutable_verts',
+            icon='PARTICLE_POINT'
+        )
+        op.edge_length = context.scene.edges_length_length
+        op.deselect_angle = context.scene.edges_length_deselect_angle
+
 
 # OPERATORS
 
@@ -197,25 +215,15 @@ class EdgesLength_PT_panel(Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.prop(
-            data=context.scene,
-            property='edges_length_length'
+        EdgesLength.ui(
+            layout=layout,
+            context=context
         )
-        layout.prop(
-            data=context.scene,
-            property='edges_length_deselect_angle'
-        )
-        op = layout.operator(
-            operator='edgeslength.unsutable_verts',
-            icon='PARTICLE_POINT'
-        )
-        op.edge_length = context.scene.edges_length_length
-        op.deselect_angle = context.scene.edges_length_deselect_angle
 
 
 # REGISTER
 
-def register():
+def register(ui=True):
     Scene.edges_length_length = FloatProperty(
         name='Edges Length',
         default=3.0,
@@ -230,11 +238,13 @@ def register():
         subtype='UNSIGNED'
     )
     register_class(EdgesLength_OT_unsuitable_verts)
-    register_class(EdgesLength_PT_panel)
+    if ui:
+        register_class(EdgesLength_PT_panel)
 
 
-def unregister():
-    unregister_class(EdgesLength_PT_panel)
+def unregister(ui=True):
+    if ui:
+        unregister_class(EdgesLength_PT_panel)
     unregister_class(EdgesLength_OT_unsuitable_verts)
     del Scene.edges_length_length
     del Scene.edges_length_deselect_angle

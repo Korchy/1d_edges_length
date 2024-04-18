@@ -9,13 +9,13 @@ import bpy
 from bpy.props import FloatProperty
 from bpy.types import Operator, Panel, Scene
 from bpy.utils import register_class, unregister_class
-from math import radians
+from math import radians, degrees
 
 bl_info = {
     "name": "Edges Length",
     "description": "Selects all vertices on the edge loop which do not fit into the given edge length",
     "author": "Nikita Akimov, Paul Kotelevets",
-    "version": (1, 1, 3),
+    "version": (1, 1, 4),
     "blender": (2, 79, 0),
     "location": "View3D > Tool panel > 1D > Edges Length",
     "doc_url": "https://github.com/Korchy/1d_edges_length",
@@ -29,8 +29,9 @@ bl_info = {
 class EdgesLength:
 
     @classmethod
-    def select_unsuitable_vertices(cls, context, edge_length, deselect_angle):
+    def select_unsuitable_vertices(cls, context, edge_length, gradual_angle, deselect_angle):
         # select unsuitable vertices
+        # gradual_angle - in degrees
         # deselect_angle - in degrees
         # works in Edit mode
         if context.active_object.mode != 'EDIT':
@@ -91,16 +92,19 @@ class EdgesLength:
         #     print(loop)
         # deselect all
         cls._deselect_all(bm=bm)
-        # for each loop - control summary edge length
+        # for each loop - control summary edge length and gradual angle
         for loop in loops:
-            control_length = 0.0
+            control_length = 0.0            # summary edges length
+            control_gradual_angle = 0.0     # summary angle between edges (deg)
             prev_vertex = loop[0]
             for vertex in loop[1:]:
                 control_length += (vertex.co - prev_vertex.co).length
-                if control_length < edge_length:
+                control_gradual_angle += degrees(vertex.calc_edge_angle(0.0))
+                if control_length < edge_length and control_gradual_angle < gradual_angle:
                     vertex.select = True
                 else:
                     control_length = 0.0
+                    control_gradual_angle = 0.0
                 prev_vertex = vertex
             # deselect first and last vertices of the loop
             loop[0].select = False
@@ -164,6 +168,10 @@ class EdgesLength:
         )
         layout.prop(
             data=context.scene,
+            property='edges_length_gradual_angle'
+        )
+        layout.prop(
+            data=context.scene,
             property='edges_length_deselect_angle'
         )
         op = layout.operator(
@@ -171,6 +179,7 @@ class EdgesLength:
             icon='PARTICLE_POINT'
         )
         op.edge_length = context.scene.edges_length_length
+        op.gradual_angle = context.scene.edges_length_gradual_angle
         op.deselect_angle = context.scene.edges_length_deselect_angle
 
 
@@ -178,13 +187,21 @@ class EdgesLength:
 
 class EdgesLength_OT_unsuitable_verts(Operator):
     bl_idname = 'edgeslength.unsutable_verts'
-    bl_label = 'Select Verts'
+    bl_label = 'Deselect Verts'
+    bl_description = 'Deselect Vertices on selected wire loops to split the selection by distance and angle'
     bl_options = {'REGISTER', 'UNDO'}
 
     edge_length = FloatProperty(
         name='Edges Length',
         default=3.0,
         min=0.0001,
+        subtype='UNSIGNED'
+    )
+
+    gradual_angle = FloatProperty(
+        name='Gradual Angle (deg)',
+        default=110.0,
+        min=0.0,
         subtype='UNSIGNED'
     )
 
@@ -200,6 +217,7 @@ class EdgesLength_OT_unsuitable_verts(Operator):
         EdgesLength.select_unsuitable_vertices(
             context=context,
             edge_length=self.edge_length,
+            gradual_angle=self.gradual_angle,
             deselect_angle=self.deselect_angle
         )
         return {'FINISHED'}
@@ -226,12 +244,20 @@ class EdgesLength_PT_panel(Panel):
 def register(ui=True):
     Scene.edges_length_length = FloatProperty(
         name='Edges Length',
+        description='Distance to split with vertex deselection',
         default=3.0,
         min=0.0001,
         subtype='UNSIGNED'
     )
+    Scene.edges_length_gradual_angle = FloatProperty(
+        name='Gradual Angle (deg)',
+        default=110.0,
+        min=0.0,
+        subtype='UNSIGNED'
+    )
     Scene.edges_length_deselect_angle = FloatProperty(
         name='Deselect angle (deg)',
+        description='Angle between edges to split with vertex deselection',
         default=110,
         min=0,
         max=360,
@@ -246,8 +272,9 @@ def unregister(ui=True):
     if ui:
         unregister_class(EdgesLength_PT_panel)
     unregister_class(EdgesLength_OT_unsuitable_verts)
-    del Scene.edges_length_length
     del Scene.edges_length_deselect_angle
+    del Scene.edges_length_gradual_angle
+    del Scene.edges_length_length
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ Blender add-on.
 
 Add-on functionality
 -
-Selects all vertices on the edge loop which do not fit into the given edge length.
+Selects all vertices on the edge loop which do not fit into the given edge length and gradual (summary) angle.
 
 Blender version
 -
@@ -12,6 +12,9 @@ Blender version
 
 Version history
 -
+1.1.4
+- Added gradual angle control. Works similar edges lengths, but for angle between edges.
+
 1.1.3
 - Integrated to the NA 1D Tools
 

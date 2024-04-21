@@ -15,7 +15,7 @@ bl_info = {
     "name": "Edges Length",
     "description": "Selects all vertices on the edge loop which do not fit into the given edge length",
     "author": "Nikita Akimov, Paul Kotelevets",
-    "version": (1, 1, 4),
+    "version": (1, 1, 5),
     "blender": (2, 79, 0),
     "location": "View3D > Tool panel > 1D > Edges Length",
     "doc_url": "https://github.com/Korchy/1d_edges_length",
@@ -109,14 +109,17 @@ class EdgesLength:
             # deselect first and last vertices of the loop
             loop[0].select = False
             loop[-1].select = False
-        # deselect vertices with angle less than deselect_angle
-        for vertex in (_vertex for _vertex in bm.verts
-                       if _vertex.select
-                           and len(_vertex.link_edges) == 2):
-            edge0 = vertex.link_edges[0]
-            edge1 = vertex.link_edges[1]
-            if cls._edges_angle(edge0=edge0, edge1=edge1) < radians(deselect_angle):
-                vertex.select = False
+
+        # commented by Paul Kotelevets as deprecated after adding Gradual Angle functional
+        # # deselect vertices with angle less than deselect_angle
+        # for vertex in (_vertex for _vertex in bm.verts
+        #                if _vertex.select
+        #                    and len(_vertex.link_edges) == 2):
+        #     edge0 = vertex.link_edges[0]
+        #     edge1 = vertex.link_edges[1]
+        #     if cls._edges_angle(edge0=edge0, edge1=edge1) < radians(deselect_angle):
+        #         vertex.select = False
+
         # save changed selection to the source mesh
         bm.to_mesh(context.object.data)
         # return to Edit mode
@@ -170,10 +173,13 @@ class EdgesLength:
             data=context.scene,
             property='edges_length_gradual_angle'
         )
-        layout.prop(
-            data=context.scene,
-            property='edges_length_deselect_angle'
-        )
+
+        # commented by Paul Kotelevets as deprecated after adding Gradual Angle functional
+        # layout.prop(
+        #     data=context.scene,
+        #     property='edges_length_deselect_angle'
+        # )
+
         op = layout.operator(
             operator='edgeslength.unsutable_verts',
             icon='PARTICLE_POINT'
@@ -200,25 +206,26 @@ class EdgesLength_OT_unsuitable_verts(Operator):
 
     gradual_angle = FloatProperty(
         name='Gradual Angle (deg)',
-        default=110.0,
+        default=30.0,
         min=0.0,
         subtype='UNSIGNED'
     )
 
-    deselect_angle = FloatProperty(
-        name='Deselect angle (deg)',
-        default=110,
-        min=0,
-        max=360,
-        subtype='UNSIGNED'
-    )
+    # commented by Paul Kotelevets as deprecated after adding Gradual Angle functional
+    # deselect_angle = FloatProperty(
+    #     name='Deselect angle (deg)',
+    #     default=110,
+    #     min=0,
+    #     max=360,
+    #     subtype='UNSIGNED'
+    # )
 
     def execute(self, context):
         EdgesLength.select_unsuitable_vertices(
             context=context,
             edge_length=self.edge_length,
             gradual_angle=self.gradual_angle,
-            deselect_angle=self.deselect_angle
+            deselect_angle=110.0
         )
         return {'FINISHED'}
 
@@ -251,7 +258,7 @@ def register(ui=True):
     )
     Scene.edges_length_gradual_angle = FloatProperty(
         name='Gradual Angle (deg)',
-        default=110.0,
+        default=30.0,
         min=0.0,
         subtype='UNSIGNED'
     )

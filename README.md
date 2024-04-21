@@ -12,6 +12,9 @@ Blender version
 
 Version history
 -
+1.1.5
+- Removed "Deselect Angle" functional
+
 1.1.4
 - Added gradual angle control. Works similar edges lengths, but for angle between edges.
 

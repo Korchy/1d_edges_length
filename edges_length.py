@@ -186,7 +186,7 @@ class EdgesLength:
         )
         op.edge_length = context.scene.edges_length_length
         op.gradual_angle = context.scene.edges_length_gradual_angle
-        op.deselect_angle = context.scene.edges_length_deselect_angle
+        # op.deselect_angle = context.scene.edges_length_deselect_angle
 
 
 # OPERATORS
